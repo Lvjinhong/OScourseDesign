@@ -118,6 +118,8 @@ int main()
     calculateTimes(processes[2], n, 2);
     //*****************************************************
     printf("---------------------------HRP最高响应比优先法---------------------------\n");
+    sortProcessesByArrivalTime(processes[3], n);
+    printf("按照到达排序后的进程信息：\n");
     printProcessInfo(processes[3], n);
     hrpScheduling(processes[3], n);
     // 调用计算函数
