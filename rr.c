@@ -79,7 +79,7 @@ void rrScheduling(Process pro[], int num, int timeSlice, float *results)
     Queue queue;
     QueueInit(&queue);
     int currentTime = 0;
-    float totalTurnaroundTime = 0, totalWeightedTurnaroundTime = 0;
+    float totalTurnaroundTime = 0, totalWeightedTurnaroundTime = 0, sumWaittime = 0;
     int completed = 0, i = 0;
 
     while (completed < num)
@@ -101,6 +101,7 @@ void rrScheduling(Process pro[], int num, int timeSlice, float *results)
                 currentProcess->waitingTime = currentProcess->turnaroundTime - currentProcess->burstTime;
                 totalTurnaroundTime += currentProcess->turnaroundTime;
                 totalWeightedTurnaroundTime += (float)currentProcess->turnaroundTime / currentProcess->burstTime;
+                sumWaittime += currentProcess->waitingTime;
                 printf("%d\t%d\t%d\t%d\t%d\t%d\t%.2f\n", currentProcess->processId, currentProcess->arrivalTime, currentProcess->burstTime, currentProcess->arrivalTime + currentProcess->waitingTime,
                        currentTime, currentProcess->turnaroundTime, (float)currentProcess->turnaroundTime / currentProcess->burstTime);
                 completed++;
@@ -115,7 +116,7 @@ void rrScheduling(Process pro[], int num, int timeSlice, float *results)
             currentTime++;
         }
     }
-    results[0] = totalTurnaroundTime / num;
-    results[1] = totalWeightedTurnaroundTime / num;
-    printf("平均周转时间为%.2f\t平均带权周转时间为%.2f\n\n", totalTurnaroundTime / num, totalWeightedTurnaroundTime / num);
+    results[0] = sumWaittime / num;
+    results[1] = totalTurnaroundTime / num;
+    printf("平均等待时间为%.2f\n平均周转时间为%.2f\n\n", sumWaittime / num, totalTurnaroundTime / num);
 }

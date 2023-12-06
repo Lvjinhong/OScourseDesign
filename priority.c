@@ -122,7 +122,6 @@ void Priority(Process *processes, int n, float *results)
 
         printf("%d\t%d\t%d\t  %d\t  %d\t  %d\t  %d\n", currentProcess->processId, currentProcess->arrivalTime, currentProcess->burstTime, startTime, finishTime, T_time, ZZ_time);
 
-        // 更新当前时间
         currentTime = finishTime;
         // 更新已完成的进程数量
         completedProcesses++;
