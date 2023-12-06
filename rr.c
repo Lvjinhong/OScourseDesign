@@ -1,40 +1,121 @@
 #include <stdio.h>
 #include "main.h"
 // 时间片轮转调度算法
-void roundRobinScheduling(Process *processes, int n, int timeQuantum)
+int min(int a, int b)
 {
-    int i, totalBurstTime = 0;
-    int currentTime = 0;
+    return a < b ? a : b;
+}
 
-    // 计算总的执行时间
-    for (i = 0; i < n; i++)
+typedef struct QueueNode
+{
+    Process *data;
+    struct QueueNode *next;
+} QueueNode;
+
+typedef struct
+{
+    QueueNode *front, *rear;
+    int size;
+} Queue;
+
+void QueueInit(Queue *q)
+{
+    q->front = q->rear = NULL;
+    q->size = 0;
+}
+
+void Enqueue(Queue *q, Process *p)
+{
+    QueueNode *temp = (QueueNode *)malloc(sizeof(QueueNode));
+    temp->data = p;
+    temp->next = NULL;
+    if (q->rear == NULL)
     {
-        totalBurstTime += processes[i].burstTime;
-        processes[i].remainingTime = processes[i].burstTime;
+        q->front = q->rear = temp;
+        q->size = 1;
+        return;
     }
+    q->rear->next = temp;
+    q->rear = temp;
+    q->size++;
+}
 
-    // 执行时间片轮转调度
-    while (totalBurstTime > 0)
+Process *Dequeue(Queue *q)
+{
+    if (q->front == NULL)
     {
-        for (i = 0; i < n; i++)
+        return NULL;
+    }
+    QueueNode *temp = q->front;
+    Process *p = temp->data;
+    q->front = q->front->next;
+    if (q->front == NULL)
+    {
+        q->rear = NULL;
+    }
+    free(temp);
+    q->size--;
+    return p;
+}
+
+void sortWithArrivalTime(Process pro[], int num)
+{
+    for (int i = 0; i < num - 1; i++)
+    {
+        for (int j = 0; j < num - i - 1; j++)
         {
-            if (processes[i].remainingTime > 0)
+            if (pro[j].arrivalTime > pro[j + 1].arrivalTime)
             {
-                if (processes[i].remainingTime <= timeQuantum)
-                {
-                    currentTime += processes[i].remainingTime;
-                    totalBurstTime -= processes[i].remainingTime;
-                    processes[i].waitingTime = currentTime - processes[i].arrivalTime - processes[i].burstTime;
-                    processes[i].turnaroundTime = currentTime - processes[i].arrivalTime;
-                    processes[i].remainingTime = 0;
-                }
-                else
-                {
-                    currentTime += timeQuantum;
-                    totalBurstTime -= timeQuantum;
-                    processes[i].remainingTime -= timeQuantum;
-                }
+                Process temp = pro[j];
+                pro[j] = pro[j + 1];
+                pro[j + 1] = temp;
             }
         }
     }
+}
+void rrScheduling(Process pro[], int num, int timeSlice, float *results)
+{
+    printf("进程ID 到达时间 服务时间 开始时间 完成时间 周转时间 带权周转时间\n");
+    Queue queue;
+    QueueInit(&queue);
+    int currentTime = 0;
+    float totalTurnaroundTime = 0, totalWeightedTurnaroundTime = 0;
+    int completed = 0, i = 0;
+
+    while (completed < num)
+    {
+        while (i < num && pro[i].arrivalTime <= currentTime)
+        {
+            Enqueue(&queue, &pro[i]);
+            i++;
+        }
+        if (queue.size > 0)
+        {
+            Process *currentProcess = Dequeue(&queue);
+            int executionTime = (currentProcess->remainingTime > timeSlice) ? timeSlice : currentProcess->remainingTime;
+            currentTime += executionTime;
+            currentProcess->remainingTime -= executionTime;
+            if (currentProcess->remainingTime == 0)
+            {
+                currentProcess->turnaroundTime = currentTime - currentProcess->arrivalTime;
+                currentProcess->waitingTime = currentProcess->turnaroundTime - currentProcess->burstTime;
+                totalTurnaroundTime += currentProcess->turnaroundTime;
+                totalWeightedTurnaroundTime += (float)currentProcess->turnaroundTime / currentProcess->burstTime;
+                printf("%d\t%d\t%d\t%d\t%d\t%d\t%.2f\n", currentProcess->processId, currentProcess->arrivalTime, currentProcess->burstTime, currentProcess->arrivalTime + currentProcess->waitingTime,
+                       currentTime, currentProcess->turnaroundTime, (float)currentProcess->turnaroundTime / currentProcess->burstTime);
+                completed++;
+            }
+            else
+            {
+                Enqueue(&queue, currentProcess);
+            }
+        }
+        else
+        {
+            currentTime++;
+        }
+    }
+    results[0] = totalTurnaroundTime / num;
+    results[1] = totalWeightedTurnaroundTime / num;
+    printf("平均周转时间为%.2f\t平均带权周转时间为%.2f\n\n", totalTurnaroundTime / num, totalWeightedTurnaroundTime / num);
 }

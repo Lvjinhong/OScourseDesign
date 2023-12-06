@@ -1,6 +1,19 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "main.h"
-// // 按照进程的执行时间进行排序
+// 比较函数，用于按照到达时间和执行时间排序
+int compare(const void *a, const void *b)
+{
+    Process *processA = (Process *)a;
+    Process *processB = (Process *)b;
+
+    // 如果到达时间相同，则比较执行时间
+    if (processA->arrivalTime == processB->arrivalTime)
+    {
+        return processA->burstTime - processB->burstTime;
+    }
+    return processA->arrivalTime - processB->arrivalTime;
+}
 void sortByBurstTime(Process *processes, int n)
 {
     int i, j;
@@ -16,34 +29,14 @@ void sortByBurstTime(Process *processes, int n)
     }
 }
 
-// int main()
-// {
-//     int n; // 进程数量
-//     int i;
-
-//     // 输入进程数量
-//     printf("请输入进程数量: ");
-//     scanf("%d", &n);
-
-//     // 创建进程数组
-//     Process processes[n];
-
-//     // 输入每个进程的到达时间和执行时间
-//     for (i = 0; i < n; i++)
-//     {
-//         printf("请输入进程%d的到达时间和执行时间: ", i + 1);
-//         scanf("%d %d", &processes[i].arrivalTime, &processes[i].burstTime);
-//         processes[i].processId = i + 1;
-//     }
-
-//     // 按照到达时间排序
-//     sortByArrivalTime(processes, n);
-
-//     // 按照执行时间排序
-//     sortByBurstTime(processes, n);
-
-//     // 调用计算函数
-//     calculateTimes(processes, n);
-
-//     return 0;
-// }
+// 计算等待时间和周转时间
+void calculateSJFTimes(Process *processes, int n, int index)
+{
+    int i, j;
+    int currentTime = 0;
+    int totalWaitingTime = 0;
+    int totalTurnaroundTime = 0;
+    qsort(&processes[1], n - 1, sizeof(Process), compare); // 根据到达时间和执行时间排序
+    printf("按照到达-执行时间排序后的进程信息：\n");
+    printProcessInfo(processes, n);
+}

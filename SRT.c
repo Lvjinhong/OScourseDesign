@@ -1,54 +1,73 @@
 #include <stdio.h>
 #include "main.h"
 // SRT调度算法
-void srtScheduling(Process *processes, int n)
+void srtScheduling(Process *processes, int n, float *results)
 {
-    int i, shortestProcess, currentTime = 0;
-    int totalBurstTime = 0, completedProcesses = 0;
-    int isCompleted[n];
+    int currentTime = 0;
+    int completedProcesses = 0;
+    int shortestTime, index;
+    float totalWaitingTime = 0, totalTurnaroundTime = 0;
+    Process *currentProcess = NULL;
 
-    // 初始化标志数组
-    for (i = 0; i < n; i++)
+    // 初始化每个进程的剩余时间
+    for (int i = 0; i < n; i++)
     {
-        isCompleted[i] = 0;
-        totalBurstTime += processes[i].burstTime;
         processes[i].remainingTime = processes[i].burstTime;
     }
 
-    // 执行SRT调度
     while (completedProcesses < n)
     {
-        shortestProcess = -1;
+        shortestTime = 9999;
+        index = -1;
 
-        // 查找剩余时间最短的进程
-        for (i = 0; i < n; i++)
+        // 寻找剩余时间最短的进程
+        for (int i = 0; i < n; i++)
         {
-            if (processes[i].arrivalTime <= currentTime && !isCompleted[i])
+            if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime < shortestTime && processes[i].remainingTime > 0)
             {
-                if (shortestProcess == -1 || processes[i].remainingTime < processes[shortestProcess].remainingTime)
-                {
-                    shortestProcess = i;
-                }
+                shortestTime = processes[i].remainingTime;
+                index = i;
             }
         }
 
-        // 更新当前时间和进程状态
-        if (shortestProcess != -1)
-        {
-            currentTime++;
-            processes[shortestProcess].remainingTime--;
+        if (index != -1)
+        { // 如果找到了合适的进程
+            currentProcess = &processes[index];
+            currentProcess->remainingTime--;
+            printf("时间 %d: 进程 %d 正在执行\n", currentTime, currentProcess->processId);
 
-            if (processes[shortestProcess].remainingTime == 0)
-            {
+            if (currentProcess->remainingTime == 0)
+            { // 如果进程完成
+                printf("时间 %d: 进程 %d 完成\n", currentTime, currentProcess->processId);
+                currentProcess->turnaroundTime = currentTime - currentProcess->arrivalTime + 1;
+                currentProcess->waitingTime = currentProcess->turnaroundTime - currentProcess->burstTime;
+                totalWaitingTime += currentProcess->waitingTime;
+                totalTurnaroundTime += currentProcess->turnaroundTime;
                 completedProcesses++;
-                isCompleted[shortestProcess] = 1;
-                processes[shortestProcess].waitingTime = currentTime - processes[shortestProcess].arrivalTime - processes[shortestProcess].burstTime;
-                processes[shortestProcess].turnaroundTime = currentTime - processes[shortestProcess].arrivalTime;
             }
         }
-        else
+
+        // 时间前进
+        currentTime++;
+
+        if (index == -1 && completedProcesses < n)
         {
-            currentTime++;
+            printf("时间 %d: CPU空闲\n", currentTime);
         }
     }
+
+    // 打印统计信息
+    printf("\n进程ID\t到达时间\t服务时间\t等待时间\t周转时间\n");
+    for (int i = 0; i < n; i++)
+    {
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\n", processes[i].processId, processes[i].arrivalTime, processes[i].burstTime, processes[i].waitingTime, processes[i].turnaroundTime);
+    }
+
+    // 计算并打印平均等待时间和平均周转时间
+    float avgWaitingTime = totalWaitingTime / n;
+    float avgTurnaroundTime = totalTurnaroundTime / n;
+    results[0] = avgWaitingTime;
+    results[1] = avgTurnaroundTime;
+    printf("\n平均等待时间: %.2f\n", avgWaitingTime);
+    printf("平均周转时间: %.2f\n", avgTurnaroundTime);
 }

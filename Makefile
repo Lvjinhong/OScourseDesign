@@ -8,7 +8,7 @@ CC = gcc
 TARGET = main
 
 # 定义对象文件
-OBJS = build/main.o build/priority.o   build/HRP.o build/SRT.o build/FCFS.o build/SJF.o build/rr.o
+OBJS = build/main.o build/priority.o   build/HRRN.o build/SRT.o build/FCFS.o build/SJF.o build/RR.o
 # 定义 build 目录
 BUILD_DIR = build
 
@@ -30,11 +30,11 @@ build/main.o: main.c main.h
 build/priority.o: priority.c main.h
 	$(CC) $(CFLAGS) -c priority.c -o build/priority.o
 # 编译规则
-build/rr.o: rr.c
-	$(CC) $(CFLAGS) -c rr.c -o build/rr.o
+build/RR.o: RR.c
+	$(CC) $(CFLAGS) -c RR.c -o build/RR.o
 
-build/HRP.o: HRP.c
-	$(CC) $(CFLAGS) -c HRP.c -o build/HRP.o
+build/HRRN.o: HRRN.c
+	$(CC) $(CFLAGS) -c HRRN.c -o build/HRRN.o
 
 build/SRT.o: SRT.c
 	$(CC) $(CFLAGS) -c SRT.c -o build/SRT.o
